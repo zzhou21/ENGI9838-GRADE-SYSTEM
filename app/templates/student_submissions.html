@@ -1,0 +1,80 @@
+<!-- templates/student_submissions.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Submissions</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 90%; margin: auto; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    .actions a { margin-right: 5px; }
+    .error { color: red; }
+    .success { color: green; }
+    .info { color: blue; }
+  </style>
+</head>
+<body>
+  <!-- This page displays all submissions made by the student with enhanced information -->
+  <h1>Your Submissions</h1>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  {% if submissions %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Course</th>
+          <th>Assignment</th>
+          <th>File</th>
+          <th>Submitted At</th>
+          <th>Is Late</th>
+          <th>Grade</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sub in submissions %}
+        <tr>
+          <td>{{ sub.id }}</td>
+          <td>{{ sub.course_name }}</td>
+          <td>{{ sub.assignment_title }}</td>
+          <td>{{ sub.file_path or 'No file' }}</td>
+          <td>{{ sub.submitted_at }}</td>
+          <td>{{ 'Yes' if sub.is_late else 'No' }}</td>
+          <td>
+            {% if sub.grade %}
+              {{ sub.grade.score }} / 100
+              {% if sub.grade.feedback %}
+                <div><small>Feedback: {{ sub.grade.feedback }}</small></div>
+              {% endif %}
+            {% else %}
+              Not graded yet
+            {% endif %}
+          </td>
+          <td class="actions">
+            {% if not sub.grade %}
+              <a href="{{ url_for('submission_update', submission_id=sub.id) }}">Edit</a>
+              <a href="{{ url_for('submission_delete', submission_id=sub.id) }}" onclick="return confirm('Are you sure you want to delete this submission?');">Delete</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No submissions found.</p>
+  {% endif %}
+  
+  <p><a href="{{ url_for('create_submission_route') }}">Create New Submission</a></p>
+  <p><a href="{{ url_for('student_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

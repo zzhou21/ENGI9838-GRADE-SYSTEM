@@ -1,0 +1,59 @@
+<!-- templates/submission_update.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Update Submission</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    form { max-width: 400px; margin: 0 auto; }
+    label { display: block; margin-bottom: 8px; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <!-- 
+    Used by /submission/update, calling update_submission(submission_id, new_file_path, new_is_late).
+    Now with file upload support.
+  -->
+  <h2>Update Submission</h2>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  <form method="POST" enctype="multipart/form-data">
+    <label>Submission ID:
+      <input type="text" name="submission_id" value="{{ submission.id if submission else '' }}" required {% if submission %}readonly{% endif %} />
+    </label>
+    
+    {% if submission %}
+      <p>Current File: {{ submission.file_path or 'No file' }}</p>
+    {% endif %}
+    
+    <label>Upload New File:
+      <input type="file" name="new_submission_file" />
+    </label>
+    
+    <label>Or Enter File Path:
+      <input type="text" name="new_file_path" value="{{ submission.file_path if submission else '' }}" />
+    </label>
+    
+    <label>Is Late? (true/false):
+      <select name="new_is_late">
+        <option value="false" {% if submission and not submission.is_late %}selected{% endif %}>False</option>
+        <option value="true" {% if submission and submission.is_late %}selected{% endif %}>True</option>
+      </select>
+    </label>
+    
+    <button type="submit">Update</button>
+  </form>
+  
+  <p><a href="{{ url_for('student_submissions') }}">Back to Submissions</a></p>
+</body>
+</html>

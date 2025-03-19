@@ -1,0 +1,56 @@
+<!-- templates/create_submission.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Submission</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    form { max-width: 400px; margin: 0 auto; }
+    label { display: block; margin-bottom: 8px; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <!-- 
+    Used by /create_submission route, which calls create_submission(assignment_id, student_id, file_path, is_late).
+    'student_id' is taken from session, so we only need assignment_id, file_path, is_late.
+    Now with file upload support.
+  -->
+  <h2>Create Submission</h2>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  <form method="POST" enctype="multipart/form-data">
+    <label>Assignment:
+      <select name="assignment_id" required>
+        <option value="">-- Select Assignment --</option>
+        {% for assignment in assignments %}
+          <option value="{{ assignment.id }}" {% if selected_assignment and selected_assignment.id == assignment.id %}selected{% endif %}>
+            {{ assignment.title }} - Due: {{ assignment.due_date or 'No due date' }}
+          </option>
+        {% endfor %}
+      </select>
+    </label>
+    
+    <label>Upload File:
+      <input type="file" name="submission_file" />
+    </label>
+    
+    <label>Is Late?
+      <input type="checkbox" name="is_late" value="true" />
+    </label>
+    
+    <button type="submit">Submit</button>
+  </form>
+  
+  <p><a href="{{ url_for('student_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

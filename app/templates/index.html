@@ -1,0 +1,29 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Index Page</title>
+  <!-- Simple inline style, you can move to a separate CSS file -->
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    a { margin-right: 10px; }
+  </style>
+</head>
+<body>
+  <!-- 
+    This is the home page with basic navigation.
+    It references routes in app.py: /register, /login, /logout, /create_course, /list_courses
+  -->
+  <h1>Welcome to Grade System</h1>
+  <p>
+    <a href="{{ url_for('register') }}">Register</a> |
+    <a href="{{ url_for('login') }}">Login</a> |
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </p>
+  <p>
+    <a href="{{ url_for('create_course_route') }}">Create Course (Teacher Only)</a> |
+    <a href="{{ url_for('list_courses') }}">List Courses</a>
+  </p>
+</body>
+</html>

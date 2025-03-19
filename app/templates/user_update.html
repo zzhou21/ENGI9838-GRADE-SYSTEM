@@ -1,0 +1,37 @@
+<!-- templates/user_update.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Update User</title>
+  <!-- Simple inline style for demonstration -->
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    form { max-width: 400px; margin: 0 auto; }
+    label { display: block; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <!-- 
+    This form corresponds to the /user/update route in app.py,
+    which calls update_user(user_id, new_email, new_role, new_password).
+    So we need fields for 'user_id', 'new_email', 'new_role', 'new_password'.
+  -->
+  <h2>Update User</h2>
+  <form method="POST">
+    <label>User ID:
+      <input type="text" name="user_id" required />
+    </label>
+    <label>New Email:
+      <input type="text" name="new_email" />
+    </label>
+    <label>New Role:
+      <input type="text" name="new_role" />
+    </label>
+    <label>New Password:
+      <input type="password" name="new_password" />
+    </label>
+    <button type="submit">Update</button>
+  </form>
+</body>
+</html>

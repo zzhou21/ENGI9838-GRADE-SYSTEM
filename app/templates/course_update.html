@@ -1,0 +1,58 @@
+<!-- templates/course_update.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Update Course</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    form { max-width: 400px; margin: 0 auto; }
+    label { display: block; margin-bottom: 8px; }
+    input, textarea { width: 100%; padding: 8px; margin-bottom: 10px; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <!-- 
+    Corresponds to /course/update.
+    In app.py, we call cs_update_course(course_id, new_name, new_teacher_id, new_code, new_desc).
+    Now with pre-filling support.
+  -->
+  <h2>Update Course</h2>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  <form method="POST">
+    <label>Course ID:
+      <input type="text" name="course_id" value="{{ course.id if course else '' }}" required {% if course %}readonly{% endif %} />
+    </label>
+    
+    <label>New Name:
+      <input type="text" name="new_name" value="{{ course.course_name if course else '' }}" />
+    </label>
+    
+    <label>New Teacher ID:
+      <input type="text" name="new_teacher_id" value="{{ course.teacher_id if course else '' }}" />
+    </label>
+    
+    <label>New Code:
+      <input type="text" name="new_code" value="{{ course.course_code if course else '' }}" />
+    </label>
+    
+    <label>New Description:
+      <textarea name="new_desc" rows="3">{{ course.description if course else '' }}</textarea>
+    </label>
+    
+    <button type="submit">Update</button>
+  </form>
+  
+  <p><a href="{{ url_for('teacher_courses') if session.role == 'teacher' else url_for('index') }}">Back</a></p>
+</body>
+</html>

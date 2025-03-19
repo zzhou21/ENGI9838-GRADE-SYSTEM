@@ -1,0 +1,59 @@
+<!-- templates/create_assignment.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Assignment</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    form { max-width: 400px; margin: 0 auto; border: 1px solid #ccc; padding: 20px; }
+    label { display: block; margin-bottom: 8px; }
+    input, textarea, select { margin-bottom: 12px; width: 100%; padding: 8px; }
+    .error { color: red; }
+    .success { color: green; }
+  </style>
+</head>
+<body>
+  <h2>Create a New Assignment</h2>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  {% if courses %}
+    <form method="POST">
+      <label>Course:
+        <select name="course_id" required>
+          <option value="">-- Select Course --</option>
+          {% for course in courses %}
+            <option value="{{ course.id }}" {% if selected_course and selected_course.id == course.id %}selected{% endif %}>{{ course.course_name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      
+      <label>Assignment Title:
+        <input type="text" name="title" required />
+      </label>
+      
+      <label>Description (optional):
+        <textarea name="description" rows="4"></textarea>
+      </label>
+      
+      <label>Due Date (YYYY-MM-DD) (optional):
+        <input type="text" name="due_date" placeholder="e.g. 2025-04-15" />
+      </label>
+      
+      <button type="submit">Create Assignment</button>
+    </form>
+  {% else %}
+    <p>You need to create a course first before you can create assignments.</p>
+    <p><a href="{{ url_for('create_course_route') }}">Create a Course</a></p>
+  {% endif %}
+  
+  <p><a href="{{ url_for('teacher_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

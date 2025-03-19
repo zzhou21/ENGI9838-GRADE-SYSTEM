@@ -1,0 +1,42 @@
+<!-- templates/student_dashboard.html -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Dashboard - Local Grade System</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    nav { margin-bottom: 20px; }
+    a { margin-right: 10px; text-decoration: none; color: #0366d6; }
+    a:hover { text-decoration: underline; }
+    .error { color: red; }
+    .success { color: green; }
+    .info { color: blue; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="{{ url_for('logout') }}">Exit login</a>
+  </nav>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <h1>Welcome to Student Dashboard!</h1>
+  <p>Hello, {{ student_name }}</p>
+
+  <ul>
+    <li><a href="{{ url_for('student_assignments') }}">View your assignments</a></li>
+    <li><a href="{{ url_for('student_submissions') }}">Submissions</a></li>
+    <li><a href="{{ url_for('student_grades') }}">Check your grade</a></li>
+    <li><a href="{{ url_for('student_enroll') }}">Course Enrollment</a></li>
+    <li><a href="{{ url_for('create_submission_route') }}">Submit an Assignment</a></li>
+  </ul>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!-- templates/list_courses.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>List Courses</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 80%; margin: 0 auto; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    h2 { text-align: center; }
+  </style>
+</head>
+<body>
+  <!-- 
+    Displays all courses in a table format.
+    The 'courses' variable is passed from the /list_courses route in app.py.
+  -->
+  <h2>All Courses</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Course Name</th>
+        <th>Teacher ID</th>
+        <th>Course Code</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for course in courses %}
+      <tr>
+        <td>{{ course.id }}</td>
+        <td>{{ course.course_name }}</td>
+        <td>{{ course.teacher_id }}</td>
+        <td>{{ course.course_code or '' }}</td>
+        <td>{{ course.description or '' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p style="text-align:center;">
+    <a href="{{ url_for('index') }}">Back to Home</a>
+  </p>
+</body>
+</html>

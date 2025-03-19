@@ -1,0 +1,67 @@
+<!-- templates/student_enroll.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Course Enrollment</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 90%; margin: auto; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    form { max-width: 400px; margin: 20px auto; }
+    label { display: block; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <!-- This page allows a student to enroll in courses.
+       It displays a list of all courses, and highlights courses already enrolled.
+       The form allows the student to enroll in a course by providing its course ID.
+  -->
+  <h1>Course Enrollment</h1>
+  <h3>Available Courses</h3>
+  {% if courses %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Course Name</th>
+          <th>Course Code</th>
+          <th>Description</th>
+          <th>Teacher ID</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for course in courses %}
+        <tr>
+          <td>{{ course.id }}</td>
+          <td>{{ course.course_name }}</td>
+          <td>{{ course.course_code or '' }}</td>
+          <td>{{ course.description or '' }}</td>
+          <td>{{ course.teacher_id }}</td>
+          <td>
+            {% if course.id in enrolled_course_ids %}
+              Enrolled
+            {% else %}
+              Not Enrolled
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No courses available.</p>
+  {% endif %}
+
+  <h3>Enroll in a Course</h3>
+  <form method="POST" action="{{ url_for('student_enroll') }}">
+    <label>Course ID:
+      <input type="text" name="course_id" required />
+    </label>
+    <button type="submit">Enroll</button>
+  </form>
+  <p><a href="{{ url_for('student_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

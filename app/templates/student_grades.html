@@ -1,0 +1,59 @@
+<!-- templates/student_grades.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Grades</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 90%; margin: auto; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f0f0f0; }
+    .error { color: red; }
+    .success { color: green; }
+    .info { color: blue; }
+  </style>
+</head>
+<body>
+  <!-- This page displays the grades for the student's submissions with enhanced information -->
+  <h1>Your Grades</h1>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <p class="{{ category }}">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  {% if grades %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Course</th>
+          <th>Assignment</th>
+          <th>Score</th>
+          <th>Feedback</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for grade in grades %}
+        <tr>
+          <td>{{ grade.id }}</td>
+          <td>{{ grade.course_name }}</td>
+          <td>{{ grade.assignment_title }}</td>
+          <td>{{ grade.score }} / 100</td>
+          <td>{{ grade.feedback or 'No feedback provided' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No grades available. Submit some assignments to get graded.</p>
+    <p><a href="{{ url_for('student_assignments') }}">View Assignments</a></p>
+  {% endif %}
+  
+  <p><a href="{{ url_for('student_dashboard') }}">Back to Dashboard</a></p>
+</body>
+</html>

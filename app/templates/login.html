@@ -1,0 +1,41 @@
+<!-- templates/login.html -->
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - Local Grade System</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .login-container {
+      max-width: 400px; margin: 0 auto; border: 1px solid #ccc; padding: 20px;
+    }
+    .title { text-align: center; }
+    label { display: inline-block; width: 80px; }
+    input[type="text"], input[type="password"] {
+      width: 70%; padding: 5px; margin-bottom: 10px;
+    }
+    .btn { padding: 8px 15px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2 class="title">system_login</h2>
+
+    <form method="POST" action="/login">
+      <div>
+        <label>Username：</label>
+        <input type="text" name="username" required />
+      </div>
+
+      <div>
+        <label>Password：</label>
+        <input type="password" name="password" required />
+      </div>
+
+      <div>
+        <button class="btn" type="submit">login</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
