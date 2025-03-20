@@ -18,14 +18,14 @@ I added a function to automatically build the database, but not sure if it gonna
 
 ![image](https://github.com/user-attachments/assets/26ef20e4-7b1b-4b92-8541-eb10372f2607)
 
-# Suceesful for submission
+## 4. Suceesful for submission
 ![image](https://github.com/user-attachments/assets/3d1075c9-a051-4c16-8164-701a51e7a61a)
 
 The url for the assignments is stored in the uploads directory, can be achieved directly by clicking on it
 
 ![image](https://github.com/user-attachments/assets/b4556c8e-2aa7-4505-a43e-b4a174f3f811)
 
-# Succesful for creating assignments
+## 5. Succesful for creating assignments
 ![image](https://github.com/user-attachments/assets/b1b74992-c6df-42e9-8cfc-6cc64f91d0af)
 
 ![image](https://github.com/user-attachments/assets/184d9023-3f5d-4463-86f5-8f77fe3c1f00)
