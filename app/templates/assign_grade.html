@@ -12,12 +12,14 @@
     .error { color: red; }
     .success { color: green; }
     .submission-info { background: #f5f5f5; padding: 10px; margin-bottom: 20px; border-radius: 5px; }
+    .file-link { color: #0366d6; text-decoration: none; }
+    .file-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <!-- 
     Used by /assign_grade route, calling assign_grade(submission_id, float(score), feedback).
-    Now with submission info display.
+    Displays submission information and provides file download functionality.
   -->
   <h2>Assign Grade</h2>
   
@@ -37,7 +39,16 @@
       <p><strong>Assignment ID:</strong> {{ submission.assignment_id }}</p>
       <p><strong>Submitted At:</strong> {{ submission.submitted_at }}</p>
       <p><strong>Is Late:</strong> {{ submission.is_late }}</p>
-      <p><strong>File:</strong> {{ submission.file_path or 'No file' }}</p>
+      <p><strong>File:</strong> 
+        {% if submission.file_path %}
+          {% set filename = submission.file_path.replace('\\', '/').split('/')[-1] if '/' in submission.file_path or '\\' in submission.file_path else submission.file_path %}
+          <a href="{{ url_for('download_file', filename=filename) }}" target="_blank" class="file-link">
+            {{ filename }}
+          </a>
+        {% else %}
+          No file
+        {% endif %}
+      </p>
     </div>
   {% endif %}
   

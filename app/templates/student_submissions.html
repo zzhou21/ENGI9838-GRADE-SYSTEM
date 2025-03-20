@@ -13,6 +13,8 @@
     .error { color: red; }
     .success { color: green; }
     .info { color: blue; }
+    .file-link { color: #0366d6; text-decoration: none; }
+    .file-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -47,7 +49,16 @@
           <td>{{ sub.id }}</td>
           <td>{{ sub.course_name }}</td>
           <td>{{ sub.assignment_title }}</td>
-          <td>{{ sub.file_path or 'No file' }}</td>
+          <td>
+            {% if sub.file_path %}
+              {% set filename = sub.file_path.replace('\\', '/').split('/')[-1] if '/' in sub.file_path or '\\' in sub.file_path else sub.file_path %}
+              <a href="{{ url_for('download_file', filename=filename) }}" target="_blank" class="file-link">
+                {{ filename }}
+              </a>
+            {% else %}
+              No file
+            {% endif %}
+          </td>
           <td>{{ sub.submitted_at }}</td>
           <td>{{ 'Yes' if sub.is_late else 'No' }}</td>
           <td>

@@ -86,4 +86,9 @@ class Grade(db.Model):
     score = db.Column(db.Float)
     feedback = db.Column(db.Text)
 
-    submission = db.relationship('Submission', backref='grade')
+    submission = db.relationship(
+        'Submission', 
+        foreign_keys=[submission_id],
+        backref=db.backref('grade', uselist=False),
+        primaryjoin="Grade.submission_id==Submission.id"
+    )

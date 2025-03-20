@@ -1,7 +1,7 @@
 # app.py
 import os
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -41,8 +41,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:Zzy19980220@localh
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Setup upload folder for assignment submissions
-UPLOAD_FOLDER = 'uploads'
+UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'uploads'))
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 # Ensure upload directory exists
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -509,7 +510,7 @@ def assignment_delete(assignment_id):
 def create_submission_route():
     """
     Calls submission_service.create_submission.
-    Now with file upload support.
+    Now with improved file upload support.
     """
     student_id = session['user_id']
     
@@ -536,15 +537,22 @@ def create_submission_route():
                 flash("You must be enrolled in the course to submit assignments", "error")
                 return render_template('create_submission.html', assignments=assignments, selected_assignment=selected_assignment)
         
-        # Handle file upload
+        # Handle file upload with improved path handling
         file_path = None
         if 'submission_file' in request.files:
             file = request.files['submission_file']
             if file and file.filename:
                 # Create a unique filename to avoid collisions
                 filename = secure_filename(f"{student_id}_{assignment_id}_{file.filename}")
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(file_path)
+                
+                # Save the file
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                
+                # Store the path with forward slashes only
+                file_path = filename
+                
+                # Log the file path for debugging
+                app.logger.info(f"File saved at: {file_path}")
         
         try:
             new_sub = create_submission(assignment_id, student_id, file_path, is_late)
@@ -597,8 +605,12 @@ def submission_update():
             if file and file.filename:
                 # Create a unique filename to avoid collisions
                 filename = secure_filename(f"{student_id}_{sub.assignment_id}_{file.filename}")
-                new_file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(new_file_path)
+                # Store only the filename in the database
+                new_file_path = filename
+                # Save using the full path
+                file_full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(file_full_path)
+
         else:
             # No new file, so use the text input if provided
             new_file_path = request.form.get('new_file_path') or None
@@ -779,6 +791,56 @@ def grade_delete(grade_id):
         flash("Grade not found.", "error")
     return redirect(url_for('teacher_view_submissions'))
 
+########################
+# FILE ROUTES
+########################
+
+@app.route('/uploads/<path:filename>')
+def download_file(filename):
+    """
+    Route to download files from uploads folder.
+    Teachers can access all files, students can only access their own submissions.
+    """
+    if 'user_id' not in session:
+        flash("Please login to access this file", "error")
+        return redirect(url_for('login'))
+    
+    # Extract just the filename without any path information
+    simple_filename = os.path.basename(filename)
+    
+    # Check user role and permissions
+    user_role = session.get('role')
+    user_id = session.get('user_id')
+    
+    # Log debugging information
+    app.logger.info(f"Attempting to access file: {simple_filename}")
+    app.logger.info(f"Upload folder path: {app.config['UPLOAD_FOLDER']}")
+    
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], simple_filename)
+    app.logger.info(f"Full file path: {file_path}")
+    
+    # Check if file exists
+    if not os.path.exists(file_path):
+        app.logger.error(f"File not found: {file_path}")
+        flash("Requested file does not exist", "error")
+        return "File not found", 404
+    
+    if user_role == 'teacher':
+        # Teachers can access all files
+        return send_from_directory(app.config['UPLOAD_FOLDER'], simple_filename)
+    elif user_role == 'student':
+        # Check if the file belongs to this student
+        # Extract student ID from the filename (assuming format: student_id_assignment_id_filename)
+        parts = simple_filename.split('_', 2)
+        if len(parts) >= 2 and str(user_id) == parts[0]:
+            return send_from_directory(app.config['UPLOAD_FOLDER'], simple_filename)
+        
+        flash("You don't have permission to access this file", "error")
+        return redirect(url_for('student_dashboard'))
+    else:
+        flash("You don't have permission to access this file", "error")
+        return redirect(url_for('index'))
+
 
 ########################
 # NEW STUDENT FUNCTIONALITY ROUTES
@@ -854,28 +916,29 @@ def student_submissions():
 @role_required('student')
 def student_grades():
     """
-    Route to view all grades for the student's submissions.
+    Route to view all grades for the student's submissions using direct SQL queries.
     """
     student_id = session['user_id']
-    submissions = get_submissions_by_student(student_id)
+
+    graded_submissions = db.session.query(Submission, Grade).\
+        join(Grade, Submission.id == Grade.submission_id).\
+        filter(Submission.student_id == student_id).all()
     
-    # Get grades with enhanced information
     enhanced_grades = []
-    for submission in submissions:
-        if submission.grade:
-            assignment = get_assignment_by_id(submission.assignment_id)
-            course = None
-            if assignment:
-                course = get_course_by_id(assignment.course_id)
-            
-            enhanced_grades.append({
-                'id': submission.grade.id,
-                'submission_id': submission.id,
-                'assignment_title': assignment.title if assignment else 'Unknown',
-                'course_name': course.course_name if course else 'Unknown',
-                'score': submission.grade.score,
-                'feedback': submission.grade.feedback
-            })
+    for submission, grade in graded_submissions:
+        assignment = get_assignment_by_id(submission.assignment_id)
+        course = None
+        if assignment:
+            course = get_course_by_id(assignment.course_id)
+        
+        enhanced_grades.append({
+            'id': grade.id,
+            'submission_id': submission.id,
+            'assignment_title': assignment.title if assignment else 'Unknown',
+            'course_name': course.course_name if course else 'Unknown',
+            'score': grade.score,
+            'feedback': grade.feedback
+        })
     
     return render_template('student_grades.html', grades=enhanced_grades)
 
