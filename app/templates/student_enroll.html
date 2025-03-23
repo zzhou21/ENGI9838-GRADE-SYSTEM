@@ -1,67 +1,228 @@
-<!-- templates/student_enroll.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Course Enrollment</title>
+  <title>Course Management</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 90%; margin: auto; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
-    form { max-width: 400px; margin: 20px auto; }
-    label { display: block; margin-bottom: 8px; }
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 20px; 
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1, h2 { 
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+    }
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin: 20px 0; 
+    }
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 12px; 
+      text-align: left; 
+    }
+    th { 
+      background: #f2f2f2; 
+      color: #333;
+      font-weight: 600;
+    }
+    tr:nth-child(even) { 
+      background-color: #f9f9f9; 
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    .enrolled {
+      background-color: #e8f4fd;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .enrolled-status {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .not-enrolled-status {
+      background-color: #f8f9fa;
+      color: #6c757d;
+    }
+    .action-button {
+      display: inline-block;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      text-align: center;
+      color: white;
+    }
+    .enroll-button {
+      background-color: #28a745;
+    }
+    .enroll-button:hover {
+      background-color: #218838;
+    }
+    .drop-button {
+      background-color: #dc3545;
+    }
+    .drop-button:hover {
+      background-color: #c82333;
+    }
+    .form-section {
+      margin: 30px 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #dee2e6;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    input[type="text"] {
+      width: 300px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button[type="submit"] {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    button[type="submit"]:hover {
+      background-color: #0069d9;
+    }
+    .message {
+      padding: 10px 15px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #007bff;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
-  <!-- This page allows a student to enroll in courses.
-       It displays a list of all courses, and highlights courses already enrolled.
-       The form allows the student to enroll in a course by providing its course ID.
-  -->
-  <h1>Course Enrollment</h1>
-  <h3>Available Courses</h3>
-  {% if courses %}
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Course Name</th>
-          <th>Course Code</th>
-          <th>Description</th>
-          <th>Teacher ID</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for course in courses %}
-        <tr>
-          <td>{{ course.id }}</td>
-          <td>{{ course.course_name }}</td>
-          <td>{{ course.course_code or '' }}</td>
-          <td>{{ course.description or '' }}</td>
-          <td>{{ course.teacher_id }}</td>
-          <td>
-            {% if course.id in enrolled_course_ids %}
-              Enrolled
-            {% else %}
-              Not Enrolled
-            {% endif %}
-          </td>
-        </tr>
+  <div class="container">
+    <h1>Course Management</h1>
+    
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="message {{ category }}">{{ message }}</div>
         {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No courses available.</p>
-  {% endif %}
+      {% endif %}
+    {% endwith %}
+    
+    <h2>Available Courses</h2>
+    {% if courses %}
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Course Name</th>
+            <th>Course Code</th>
+            <th>Description</th>
+            <th>Teacher</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for course in courses %}
+          <tr class="{% if course.id in enrolled_course_ids %}enrolled{% endif %}">
+            <td>{{ course.id }}</td>
+            <td>{{ course.course_name }}</td>
+            <td>{{ course.course_code or '' }}</td>
+            <td>{{ course.description or '' }}</td>
+            <td>{{ course.teacher_name }}</td>
+            <td>
+              <span class="status-badge {% if course.id in enrolled_course_ids %}enrolled-status{% else %}not-enrolled-status{% endif %}">
+                {% if course.id in enrolled_course_ids %}
+                  Enrolled
+                {% else %}
+                  Not Enrolled
+                {% endif %}
+              </span>
+            </td>
+            <td>
+              {% if course.id in enrolled_course_ids %}
+                <form method="POST" action="{{ url_for('student_drop_course') }}" style="display:inline;">
+                  <input type="hidden" name="course_id" value="{{ course.id }}">
+                  <button type="submit" class="action-button drop-button">Drop Course</button>
+                </form>
+              {% else %}
+                <form method="POST" action="{{ url_for('student_enroll') }}" style="display:inline;">
+                  <input type="hidden" name="course_id" value="{{ course.id }}">
+                  <button type="submit" class="action-button enroll-button">Enroll</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No courses available.</p>
+    {% endif %}
 
-  <h3>Enroll in a Course</h3>
-  <form method="POST" action="{{ url_for('student_enroll') }}">
-    <label>Course ID:
-      <input type="text" name="course_id" required />
-    </label>
-    <button type="submit">Enroll</button>
-  </form>
-  <p><a href="{{ url_for('student_dashboard') }}">Back to Dashboard</a></p>
+    <div class="form-section">
+      <h2>Manual Enrollment</h2>
+      <p>If you know the Course ID, you can directly enroll:</p>
+      <form method="POST" action="{{ url_for('student_enroll') }}">
+        <label for="course_id">Course ID:</label>
+        <input type="text" id="course_id" name="course_id" required>
+        <button type="submit">Enroll</button>
+      </form>
+    </div>
+    
+    <a href="{{ url_for('student_dashboard') }}" class="back-link">Back to Dashboard</a>
+  </div>
 </body>
 </html>

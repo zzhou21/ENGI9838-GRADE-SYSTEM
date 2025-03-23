@@ -1,84 +1,293 @@
-<!-- templates/teacher_view_submissions.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>View Student Submissions</title>
+  <title>Student Submissions Management</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 90%; margin: auto; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
-    .actions a { margin-right: 5px; }
-    .error { color: red; }
-    .success { color: green; }
-    .info { color: blue; }
-    .file-link { color: #0366d6; text-decoration: none; }
-    .file-link:hover { text-decoration: underline; }
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0;
+      padding: 20px; 
+      background-color: #f5f7fa;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    h1 { 
+      color: #2c3e50; 
+      margin-top: 0;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #3498db;
+    }
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin: 15px 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    th, td { 
+      border: 1px solid #e1e4e8; 
+      padding: 10px; 
+      text-align: left; 
+    }
+    th { 
+      background: #f2f7fd; 
+      color: #2c3e50;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    tr:nth-child(even) { 
+      background-color: #f8f9fa; 
+    }
+    tr:hover { 
+      background-color: #f1f4f8; 
+    }
+    .actions a { 
+      margin-right: 5px; 
+    }
+    .error { 
+      padding: 10px;
+      background-color: #f8d7da;
+      color: #721c24;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    .success { 
+      padding: 10px;
+      background-color: #d4edda;
+      color: #155724;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    .info { 
+      padding: 10px;
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    .file-link { 
+      color: #3498db; 
+      text-decoration: none; 
+      display: inline-flex;
+      align-items: center;
+    }
+    .file-link:hover { 
+      text-decoration: underline; 
+      color: #2980b9;
+    }
+    .file-link::before {
+      content: "";
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      margin-right: 5px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233498db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/%3E%3Cpolyline points='14 2 14 8 20 8'/%3E%3Cline x1='16' y1='13' x2='8' y2='13'/%3E%3Cline x1='16' y1='17' x2='8' y2='17'/%3E%3Cpolyline points='10 9 9 9 8 9'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+    .course-section { 
+      background: #f2f9f5; 
+      padding: 20px; 
+      margin: 25px 0; 
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      border-left: 5px solid #27ae60;
+    }
+    .course-title { 
+      font-size: 1.5em; 
+      margin-bottom: 15px; 
+      color: #2c3e50; 
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .course-title-text {
+      display: flex;
+      align-items: center;
+    }
+    .course-title-text::before {
+      content: "";
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      margin-right: 10px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2327ae60' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/%3E%3Cpath d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+    .submission-count { 
+      font-size: 0.9em; 
+      color: #7f8c8d; 
+      font-weight: normal;
+      background-color: #edf2f7;
+      padding: 3px 10px;
+      border-radius: 15px;
+    }
+    .grade-button { 
+      display: inline-block;
+      background: #3498db; 
+      color: white; 
+      padding: 6px 12px; 
+      text-decoration: none; 
+      border-radius: 4px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    .grade-button:hover { 
+      background: #2980b9; 
+    }
+    .submission-late { 
+      color: #e74c3c;
+      background-color: #ffeaea;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .submission-on-time { 
+      color: #27ae60;
+      background-color: #e8f8f0;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .graded-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .graded-yes {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .graded-no {
+      background-color: #f8f9fa;
+      color: #6c757d;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #3498db;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    .back-link:hover {
+      background-color: #f1f4f8;
+    }
+    .student-name {
+      font-weight: 500;
+    }
+    .student-id {
+      font-size: 0.85em;
+      color: #6c757d;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 0;
+      color: #7f8c8d;
+    }
   </style>
 </head>
 <body>
-  <h1>Student Submissions</h1>
-  
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <p class="{{ category }}">{{ message }}</p>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-  
-  {% if submissions %}
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Student</th>
-          <th>Course</th>
-          <th>Assignment</th>
-          <th>File</th>
-          <th>Submitted At</th>
-          <th>Late?</th>
-          <th>Graded?</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for sub in submissions %}
-        <tr>
-          <td>{{ sub.id }}</td>
-          <td>{{ sub.student_name }}</td>
-          <td>{{ sub.course_name }}</td>
-          <td>{{ sub.assignment_title }}</td>
-          <td>
-            {% if sub.file_path %}
-              {% set filename = sub.file_path.replace('\\', '/').split('/')[-1] if '/' in sub.file_path or '\\' in sub.file_path else sub.file_path %}
-              <a href="{{ url_for('download_file', filename=filename) }}" target="_blank" class="file-link">
-                {{ filename }}
-              </a>
-            {% else %}
-              No file
-            {% endif %}
-          </td>
-          <td>{{ sub.submitted_at }}</td>
-          <td>{{ 'Yes' if sub.is_late else 'No' }}</td>
-          <td>{{ 'Yes' if sub.graded else 'No' }}</td>
-          <td class="actions">
-            {% if not sub.graded %}
-              <a href="{{ url_for('assign_grade_route', submission_id=sub.id) }}">Grade</a>
-            {% else %}
-              <a href="{{ url_for('grade_update', grade_id=sub.id) }}">Edit Grade</a>
-              <a href="{{ url_for('grade_delete', grade_id=sub.id) }}" onclick="return confirm('Are you sure you want to delete this grade?');">Delete Grade</a>
-            {% endif %}
-          </td>
-        </tr>
+  <div class="container">
+    <h1>Student Submissions Management</h1>
+    
+    <!-- Flash messages display -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="{{ category }}">{{ message }}</div>
         {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No submissions found.</p>
-  {% endif %}
-  
-  <p><a href="{{ url_for('teacher_dashboard') }}">Back to Dashboard</a></p>
+      {% endif %}
+    {% endwith %}
+    
+    <!-- Display submissions grouped by course -->
+    {% if courses_with_submissions %}
+      {% for course_data in courses_with_submissions %}
+        <div class="course-section">
+          <div class="course-title">
+            <div class="course-title-text">
+              {{ course_data.course.course_name }} 
+              {% if course_data.course.course_code %}({{ course_data.course.course_code }}){% endif %}
+            </div>
+            <span class="submission-count">{{ course_data.submissions|length }} submissions</span>
+          </div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Student</th>
+                <th>Assignment</th>
+                <th>File</th>
+                <th>Submitted At</th>
+                <th>Status</th>
+                <th>Graded</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for sub in course_data.submissions %}
+              <tr>
+                <td>{{ sub.id }}</td>
+                <td>
+                  <div class="student-name">{{ sub.student_name }}</div>
+                  <div class="student-id">ID: {{ sub.student_id }}</div>
+                </td>
+                <td>
+                  <div>{{ sub.assignment_title }}</div>
+                  <div class="student-id">ID: {{ sub.assignment_id }}</div>
+                </td>
+                <td>
+                  {% if sub.file_path %}
+                    {% set filename = sub.file_path.replace('\\', '/').split('/')[-1] if '/' in sub.file_path or '\\' in sub.file_path else sub.file_path %}
+                    <a href="{{ url_for('download_file', filename=filename) }}" target="_blank" class="file-link">
+                      {{ filename }}
+                    </a>
+                  {% else %}
+                    <span style="color: #7f8c8d; font-style: italic;">No file</span>
+                  {% endif %}
+                </td>
+                <td>{{ sub.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                  <span class="{% if sub.is_late %}submission-late{% else %}submission-on-time{% endif %}">
+                    {{ 'Late' if sub.is_late else 'On Time' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="graded-badge {% if sub.graded %}graded-yes{% else %}graded-no{% endif %}">
+                    {{ 'Yes' if sub.graded else 'No' }}
+                  </span>
+                </td>
+                <td class="actions">
+                  <a href="{{ url_for('assign_grade_route', submission_id=sub.id) }}" class="grade-button">
+                    {{ 'Update Grade' if sub.graded else 'Grade' }}
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <p>No submissions found for your courses.</p>
+        <p>When students submit assignments, they will appear here.</p>
+      </div>
+    {% endif %}
+    
+    <a href="{{ url_for('teacher_dashboard') }}" class="back-link">← Back to Dashboard</a>
+  </div>
 </body>
 </html>

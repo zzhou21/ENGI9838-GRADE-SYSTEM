@@ -1,59 +1,209 @@
-<!-- templates/student_grades.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Your Grades</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 90%; margin: auto; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
-    .error { color: red; }
-    .success { color: green; }
-    .info { color: blue; }
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0;
+      padding: 20px; 
+      background-color: #f5f7fa;
+      color: #333;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    h1 { 
+      color: #2c3e50; 
+      margin-top: 0;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+    }
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin: 20px 0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    th, td { 
+      border: 1px solid #e1e4e8; 
+      padding: 12px 15px; 
+      text-align: left; 
+    }
+    th { 
+      background: #f8f9fa; 
+      color: #484848;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    tr:nth-child(even) { 
+      background-color: #f8f9fa; 
+    }
+    tr:hover { 
+      background-color: #f1f4f8; 
+    }
+    .score {
+      font-weight: 600;
+      color: #2c3e50;
+      text-align: center;
+    }
+    .high-score {
+      color: #27ae60;
+    }
+    .medium-score {
+      color: #f39c12;
+    }
+    .low-score {
+      color: #e74c3c;
+    }
+    .feedback {
+      color: #7f8c8d;
+      font-style: italic;
+    }
+    .message {
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 0;
+      color: #7f8c8d;
+    }
+    .action-link {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+    .action-link:hover {
+      background-color: #2980b9;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #3498db;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .stats-summary {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .stats-card {
+      flex: 1;
+      min-width: 200px;
+      margin: 10px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .stats-value {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #3498db;
+    }
+    .stats-label {
+      font-size: 14px;
+      color: #7f8c8d;
+      text-transform: uppercase;
+    }
   </style>
 </head>
 <body>
-  <!-- This page displays the grades for the student's submissions with enhanced information -->
-  <h1>Your Grades</h1>
-  
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <p class="{{ category }}">{{ message }}</p>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-  
-  {% if grades %}
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Course</th>
-          <th>Assignment</th>
-          <th>Score</th>
-          <th>Feedback</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for grade in grades %}
-        <tr>
-          <td>{{ grade.id }}</td>
-          <td>{{ grade.course_name }}</td>
-          <td>{{ grade.assignment_title }}</td>
-          <td>{{ grade.score }} / 100</td>
-          <td>{{ grade.feedback or 'No feedback provided' }}</td>
-        </tr>
+  <div class="container">
+    <h1>Academic Performance</h1>
+    
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="message {{ category }}">{{ message }}</div>
         {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
-    <p>No grades available. Submit some assignments to get graded.</p>
-    <p><a href="{{ url_for('student_assignments') }}">View Assignments</a></p>
-  {% endif %}
-  
-  <p><a href="{{ url_for('student_dashboard') }}">Back to Dashboard</a></p>
+      {% endif %}
+    {% endwith %}
+    
+    {% if grades %}
+      <!-- Stats summary -->
+      <div class="stats-summary">
+        <div class="stats-card">
+          <div class="stats-label">Average Score</div>
+          <div class="stats-value">
+            {{ "%.1f"|format(grades|map(attribute='score')|list|sum / grades|length) }}%
+          </div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-label">Graded Assignments</div>
+          <div class="stats-value">{{ grades|length }}</div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-label">Highest Grade</div>
+          <div class="stats-value">{{ grades|map(attribute='score')|list|max }}%</div>
+        </div>
+      </div>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Course</th>
+            <th>Assignment</th>
+            <th>Score</th>
+            <th>Feedback</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for grade in grades %}
+          <tr>
+            <td>{{ grade.id }}</td>
+            <td>{{ grade.course_name }}</td>
+            <td>{{ grade.assignment_title }}</td>
+            <td class="score {% if grade.score >= 90 %}high-score{% elif grade.score >= 70 %}medium-score{% else %}low-score{% endif %}">
+              {{ grade.score }} / 100
+            </td>
+            <td class="feedback">{{ grade.feedback or 'No feedback provided' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="empty-state">
+        <p>No grades available yet. Submit assignments to receive grades.</p>
+        <a href="{{ url_for('student_assignments') }}" class="action-link">View Available Assignments</a>
+      </div>
+    {% endif %}
+    
+    <a href="{{ url_for('student_dashboard') }}" class="back-link">Back to Dashboard</a>
+  </div>
 </body>
 </html>

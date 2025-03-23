@@ -1,59 +1,191 @@
-<!-- templates/create_assignment.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Create Assignment</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    form { max-width: 400px; margin: 0 auto; border: 1px solid #ccc; padding: 20px; }
-    label { display: block; margin-bottom: 8px; }
-    input, textarea, select { margin-bottom: 12px; width: 100%; padding: 8px; }
-    .error { color: red; }
-    .success { color: green; }
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0;
+      padding: 20px; 
+      background-color: #f5f7fa;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 30px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    h2 { 
+      color: #2c3e50; 
+      margin-top: 0;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #3498db;
+    }
+    form {
+      margin-top: 20px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label { 
+      display: block; 
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #34495e;
+    }
+    input, textarea, select { 
+      width: 100%; 
+      padding: 10px; 
+      margin-bottom: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #3498db;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    }
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 16px;
+      padding-right: 30px;
+    }
+    button {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background-color 0.2s;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #219653;
+    }
+    .message {
+      padding: 10px 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .field-info {
+      font-size: 12px;
+      color: #6c757d;
+      margin-top: 5px;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #3498db;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .required:after {
+      content: " *";
+      color: #e74c3c;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 30px 0;
+      color: #7f8c8d;
+    }
+    .create-course-link {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      font-weight: 500;
+      margin-top: 15px;
+    }
+    .create-course-link:hover {
+      background-color: #2980b9;
+    }
   </style>
 </head>
 <body>
-  <h2>Create a New Assignment</h2>
-  
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <p class="{{ category }}">{{ message }}</p>
-      {% endfor %}
+  <div class="container">
+    <h2>Create New Assignment</h2>
+    
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="message {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    
+    {% if courses %}
+      <form method="POST">
+        <div class="form-group">
+          <label class="required">Course:</label>
+          <select name="course_id" required>
+            <option value="">-- Select Course --</option>
+            {% for course in courses %}
+              <option value="{{ course.id }}" {% if selected_course and selected_course.id == course.id %}selected{% endif %}>
+                {{ course.course_name }} {% if course.course_code %}({{ course.course_code }}){% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="required">Assignment Title:</label>
+          <input type="text" name="title" required />
+          <div class="field-info">Enter a descriptive title for the assignment</div>
+        </div>
+        
+        <div class="form-group">
+          <label>Description:</label>
+          <textarea name="description" rows="4" placeholder="Describe the assignment requirements, objectives, and deliverables..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Due Date:</label>
+          <input type="date" name="due_date" />
+          <div class="field-info">Format: YYYY-MM-DD (leave empty if no specific deadline)</div>
+        </div>
+        
+        <button type="submit">Create Assignment</button>
+      </form>
+    {% else %}
+      <div class="empty-state">
+        <p>You need to create a course first before you can create assignments.</p>
+        <a href="{{ url_for('create_course_route') }}" class="create-course-link">Create a Course</a>
+      </div>
     {% endif %}
-  {% endwith %}
-  
-  {% if courses %}
-    <form method="POST">
-      <label>Course:
-        <select name="course_id" required>
-          <option value="">-- Select Course --</option>
-          {% for course in courses %}
-            <option value="{{ course.id }}" {% if selected_course and selected_course.id == course.id %}selected{% endif %}>{{ course.course_name }}</option>
-          {% endfor %}
-        </select>
-      </label>
-      
-      <label>Assignment Title:
-        <input type="text" name="title" required />
-      </label>
-      
-      <label>Description (optional):
-        <textarea name="description" rows="4"></textarea>
-      </label>
-      
-      <label>Due Date (YYYY-MM-DD) (optional):
-        <input type="text" name="due_date" placeholder="e.g. 2025-04-15" />
-      </label>
-      
-      <button type="submit">Create Assignment</button>
-    </form>
-  {% else %}
-    <p>You need to create a course first before you can create assignments.</p>
-    <p><a href="{{ url_for('create_course_route') }}">Create a Course</a></p>
-  {% endif %}
-  
-  <p><a href="{{ url_for('teacher_dashboard') }}">Back to Dashboard</a></p>
+    
+    <a href="{{ url_for('teacher_dashboard') }}" class="back-link">Back to Dashboard</a>
+  </div>
 </body>
 </html>

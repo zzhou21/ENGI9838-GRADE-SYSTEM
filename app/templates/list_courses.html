@@ -3,45 +3,277 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>List Courses</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course Catalog - Academic Grade System</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 80%; margin: 0 auto; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
-    h2 { text-align: center; }
+    /* Base styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    /* Container for the content */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Top navigation */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #4a6da7;
+      text-decoration: none;
+    }
+    
+    .nav-links a {
+      text-decoration: none;
+      color: #6c757d;
+      margin-left: 20px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: #4a6da7;
+    }
+    
+    /* Page header */
+    .page-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .page-header h1 {
+      color: #4a6da7;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .page-header p {
+      color: #6c757d;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    /* Courses table */
+    .courses-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    
+    .table-responsive {
+      overflow-x: auto;
+    }
+    
+    .courses-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .courses-table th,
+    .courses-table td {
+      padding: 15px;
+      border-bottom: 1px solid #e9ecef;
+      text-align: left;
+    }
+    
+    .courses-table th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: #495057;
+    }
+    
+    .courses-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .courses-table tr:hover {
+      background-color: rgba(74, 109, 167, 0.05);
+    }
+    
+    /* Course code badge */
+    .course-code {
+      display: inline-block;
+      padding: 4px 8px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6c757d;
+    }
+    
+    /* Buttons */
+    .btn {
+      display: inline-block;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      user-select: none;
+      border: 1px solid transparent;
+      padding: 0.375rem 0.75rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      border-radius: 4px;
+      transition: all 0.15s ease-in-out;
+      text-decoration: none;
+    }
+    
+    .btn-primary {
+      color: #fff;
+      background-color: #4a6da7;
+      border-color: #4a6da7;
+    }
+    
+    .btn-primary:hover {
+      background-color: #3b5998;
+      border-color: #3b5998;
+    }
+    
+    .btn-back {
+      display: block;
+      width: max-content;
+      margin: 20px auto;
+    }
+    
+    /* Flash messages */
+    .flash-messages {
+      margin-bottom: 20px;
+    }
+    
+    .message {
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      color: #6c757d;
+      font-size: 0.9rem;
+      border-top: 1px solid #e9ecef;
+    }
   </style>
 </head>
 <body>
-  <!-- 
-    Displays all courses in a table format.
-    The 'courses' variable is passed from the /list_courses route in app.py.
-  -->
-  <h2>All Courses</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Course Name</th>
-        <th>Teacher ID</th>
-        <th>Course Code</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for course in courses %}
-      <tr>
-        <td>{{ course.id }}</td>
-        <td>{{ course.course_name }}</td>
-        <td>{{ course.teacher_id }}</td>
-        <td>{{ course.course_code or '' }}</td>
-        <td>{{ course.description or '' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <p style="text-align:center;">
-    <a href="{{ url_for('index') }}">Back to Home</a>
-  </p>
+  <div class="container">
+    <!-- Top Navigation -->
+    <div class="top-nav">
+      <a href="{{ url_for('index') }}" class="logo">Academic Grade System</a>
+      <div class="nav-links">
+        <a href="{{ url_for('index') }}">Home</a>
+        {% if 'username' in session %}
+          <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}">Login</a>
+          <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="message {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+    
+    <!-- Page header -->
+    <div class="page-header">
+      <h1>Course Catalog</h1>
+      <p>Browse all available courses in the Academic Grade System</p>
+    </div>
+    
+    <!-- Courses table -->
+    <div class="courses-card">
+      <div class="table-responsive">
+        {% if courses %}
+          <table class="courses-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Course Name</th>
+                <th>Teacher ID</th>
+                <th>Course Code</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for course in courses %}
+                <tr>
+                  <td>{{ course.id }}</td>
+                  <td><strong>{{ course.course_name }}</strong></td>
+                  <td>{{ course.teacher_id }}</td>
+                  <td>
+                    {% if course.course_code %}
+                      <span class="course-code">{{ course.course_code }}</span>
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>{{ course.description or 'No description available' }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="empty-state">
+            <p>No courses available at the moment.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    
+    <!-- Back button -->
+    <a href="{{ url_for('index') }}" class="btn btn-primary btn-back">Back to Home</a>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <p>&copy; 2025 Academic Grade System. All rights reserved.</p>
+    </div>
+  </div>
 </body>
 </html>

@@ -3,39 +3,249 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Register</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Academic Grade System</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    form { max-width: 400px; margin: 0 auto; border: 1px solid #ccc; padding: 20px; }
-    label { display: block; margin-bottom: 8px; }
-    input, select { margin-bottom: 12px; width: 100%; padding: 8px; }
+    /* Base styles */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    /* Container for the content */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Top navigation */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 0;
+      margin-bottom: 30px;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #4a6da7;
+      text-decoration: none;
+    }
+    
+    /* Form card */
+    .form-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      max-width: 500px;
+      margin: 40px auto;
+    }
+    
+    .form-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .form-header h2 {
+      color: #4a6da7;
+      margin: 0 0 10px 0;
+      font-size: 1.8rem;
+    }
+    
+    .form-header p {
+      color: #6c757d;
+      margin: 0;
+    }
+    
+    /* Form elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #495057;
+    }
+    
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.15s ease-in-out;
+      box-sizing: border-box;
+    }
+    
+    .form-control:focus {
+      border-color: #4a6da7;
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(74, 109, 167, 0.25);
+    }
+    
+    select.form-control {
+      height: 45px;
+    }
+    
+    /* Button */
+    .btn {
+      display: inline-block;
+      font-weight: 500;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      user-select: none;
+      border: 1px solid transparent;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      line-height: 1.5;
+      border-radius: 4px;
+      transition: all 0.15s ease-in-out;
+      cursor: pointer;
+      width: 100%;
+    }
+    
+    .btn-primary {
+      color: #fff;
+      background-color: #4a6da7;
+      border-color: #4a6da7;
+    }
+    
+    .btn-primary:hover {
+      background-color: #3b5998;
+      border-color: #3b5998;
+    }
+    
+    /* Optional text */
+    .form-text {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.875rem;
+      color: #6c757d;
+    }
+    
+    /* Login link */
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .login-link a {
+      color: #4a6da7;
+      text-decoration: none;
+    }
+    
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Flash messages */
+    .flash-messages {
+      margin-bottom: 20px;
+    }
+    
+    .message {
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
-  <!-- 
-    A registration page that matches app.py's /register route.
-    The form fields are "username", "password", "email" (optional), and "role".
-    On POST, it calls the route with method='POST'.
-  -->
-  <h2>User Registration</h2>
-  <form method="POST" action="{{ url_for('register') }}">
-    <label>Username:
-      <input type="text" name="username" required />
-    </label>
-    <label>Password:
-      <input type="password" name="password" required />
-    </label>
-    <label>Email (optional):
-      <input type="email" name="email" />
-    </label>
-    <label>Role:
-      <select name="role">
-        <option value="student">Student</option>
-        <option value="teacher">Teacher</option>
-        <option value="admin">Admin</option>
-      </select>
-    </label>
-    <button type="submit">Register</button>
-  </form>
+  <div class="container">
+    <!-- Top Navigation -->
+    <div class="top-nav">
+      <a href="{{ url_for('index') }}" class="logo">Academic Grade System</a>
+    </div>
+    
+    <!-- Flash Messages -->
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="message {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+    
+    <!-- Registration Form -->
+    <div class="form-card">
+      <div class="form-header">
+        <h2>Create Your Account</h2>
+        <p>Join the Academic Grade System to manage your courses and assignments</p>
+      </div>
+      
+      <form method="POST" action="{{ url_for('register') }}">
+        <div class="form-group">
+          <label for="username" class="form-label">Username</label>
+          <input type="text" class="form-control" id="username" name="username" required placeholder="Choose a username">
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="password" name="password" required placeholder="Create a password">
+          <small class="form-text">Your password should be at least 8 characters long</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="email" class="form-label">Email (optional)</label>
+          <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address">
+        </div>
+        
+        <div class="form-group">
+          <label for="role" class="form-label">Role</label>
+          <select class="form-control" id="role" name="role">
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Register</button>
+      </form>
+      
+      <div class="login-link">
+        Already have an account? <a href="{{ url_for('login') }}">Login here</a>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <p>&copy; 2025 Academic Grade System. All rights reserved.</p>
+    </div>
+  </div>
 </body>
 </html>

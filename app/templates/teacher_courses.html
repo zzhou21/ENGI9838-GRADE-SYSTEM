@@ -3,16 +3,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manage Your Courses</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 90%; margin: auto; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f0f0f0; }
-    .actions a { margin-right: 5px; }
-    .error { color: red; }
-    .success { color: green; }
-    .info { color: blue; }
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 20px; 
+      line-height: 1.6;
+    }
+    h1 { 
+      color: #333; 
+      border-bottom: 2px solid #eee; 
+      padding-bottom: 10px; 
+    }
+    table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin: 20px 0; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    th, td { 
+      border: 1px solid #ddd; 
+      padding: 12px; 
+      text-align: left; 
+    }
+    th { 
+      background: #f5f5f5; 
+      font-weight: bold;
+    }
+    tr:nth-child(even) { 
+      background-color: #f9f9f9; 
+    }
+    tr:hover { 
+      background-color: #f1f1f1; 
+    }
+    .actions { 
+      width: 300px;
+    }
+    .actions a { 
+      display: inline-block;
+      margin-right: 5px; 
+      padding: 5px 10px;
+      text-decoration: none;
+      color: white;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .edit-btn { background-color: #f0ad4e; }
+    .delete-btn { background-color: #d9534f; }
+    .add-btn { background-color: #5cb85c; }
+    .stats-btn { background-color: #5bc0de; }
+    
+    .button {
+      display: inline-block;
+      background-color: #337ab7;
+      color: white;
+      padding: 8px 16px;
+      text-decoration: none;
+      border-radius: 4px;
+      margin: 5px 0;
+    }
+    .button:hover {
+      background-color: #286090;
+    }
+    .error { 
+      color: #d9534f; 
+      background-color: #f2dede; 
+      padding: 10px; 
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .success { 
+      color: #3c763d; 
+      background-color: #dff0d8; 
+      padding: 10px; 
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .info { 
+      color: #31708f; 
+      background-color: #d9edf7; 
+      padding: 10px; 
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .no-courses {
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -45,19 +126,23 @@
           <td>{{ course.course_code or '' }}</td>
           <td>{{ course.description or '' }}</td>
           <td class="actions">
-            <a href="{{ url_for('course_update', course_id=course.id) }}">Edit Course</a>
-            <a href="{{ url_for('course_delete', course_id=course.id) }}" onclick="return confirm('Are you sure you want to delete this course?');">Delete Course</a>
-            <a href="{{ url_for('create_assignment_route', course_id=course.id) }}">Add Assignment</a>
+            <a href="{{ url_for('course_update', course_id=course.id) }}" class="edit-btn">Edit Course</a>
+            <a href="{{ url_for('course_delete', course_id=course.id) }}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this course?');">Delete Course</a>
+            <a href="{{ url_for('create_assignment_route', course_id=course.id) }}" class="add-btn">Add Assignment</a>
+            <a href="{{ url_for('teacher_course_assignments', course_id=course.id) }}" class="stats-btn">View Assignments & Stats</a>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   {% else %}
-    <p>You don't have any courses yet.</p>
+    <div class="no-courses">
+      <p>You don't have any courses yet.</p>
+      <a href="{{ url_for('create_course_route') }}" class="button">Create Your First Course</a>
+    </div>
   {% endif %}
   
   <p><a href="{{ url_for('create_course_route') }}" class="button">Create New Course</a></p>
-  <p><a href="{{ url_for('teacher_dashboard') }}">Back to Dashboard</a></p>
+  <p><a href="{{ url_for('teacher_dashboard') }}" class="button" style="background-color: #777;">Back to Dashboard</a></p>
 </body>
 </html>

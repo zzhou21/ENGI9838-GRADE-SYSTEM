@@ -28,7 +28,8 @@ from app.services.submission_service import (
 )
 from app.services.grade_service import (
     assign_grade, get_grade_by_submission, update_grade as gd_update_grade,
-    delete_grade as gd_delete_grade
+    delete_grade as gd_delete_grade, get_assignment_stats, get_course_assignments_stats,
+    get_student_grades_by_assignment, get_score_distribution
 )
 
 ############################################################################
@@ -321,44 +322,53 @@ def teacher_courses():
 @role_required('teacher')
 def teacher_view_submissions():
     """
-    Teacher views all submissions for their courses' assignments.
+    Teacher views all submissions for their courses' assignments, grouped by course.
     """
     teacher_id = session['user_id']
     
     # Get all courses taught by this teacher
     courses = Course.query.filter_by(teacher_id=teacher_id).all()
-    course_ids = [course.id for course in courses]
     
-    # Get all assignments for these courses
-    assignments = Assignment.query.filter(Assignment.course_id.in_(course_ids)).all()
-    assignment_ids = [assignment.id for assignment in assignments]
+    # Create a structure to organize submissions by course
+    courses_with_submissions = []
     
-    # Get all submissions for these assignments
-    submissions = Submission.query.filter(Submission.assignment_id.in_(assignment_ids)).all()
-    
-    # Enhance the submissions with additional info
-    enhanced_submissions = []
-    for sub in submissions:
-        # Get student name
-        student = User.query.get(sub.student_id)
-        # Get assignment title
-        assignment = Assignment.query.get(sub.assignment_id)
-        # Get course name
-        course = Course.query.get(assignment.course_id) if assignment else None
+    for course in courses:
+        # Get all assignments for this course
+        assignments = Assignment.query.filter_by(course_id=course.id).all()
+        assignment_ids = [assignment.id for assignment in assignments]
         
-        # Add to enhanced submissions
-        enhanced_submissions.append({
-            'id': sub.id,
-            'student_name': student.username if student else 'Unknown',
-            'assignment_title': assignment.title if assignment else 'Unknown',
-            'course_name': course.course_name if course else 'Unknown',
-            'file_path': sub.file_path,
-            'submitted_at': sub.submitted_at,
-            'is_late': sub.is_late,
-            'graded': True if sub.grade else False
-        })
+        # Get all submissions for these assignments
+        submissions = Submission.query.filter(Submission.assignment_id.in_(assignment_ids)).all()
+        
+        # Enhance the submissions with additional info
+        enhanced_submissions = []
+        for sub in submissions:
+            # Get student name
+            student = User.query.get(sub.student_id)
+            # Get assignment title
+            assignment = Assignment.query.get(sub.assignment_id)
+            
+            # Add to enhanced submissions
+            enhanced_submissions.append({
+                'id': sub.id,
+                'student_id': sub.student_id,
+                'student_name': student.username if student else 'Unknown',
+                'assignment_id': sub.assignment_id,
+                'assignment_title': assignment.title if assignment else 'Unknown',
+                'file_path': sub.file_path,
+                'submitted_at': sub.submitted_at,
+                'is_late': sub.is_late,
+                'graded': True if sub.grade else False
+            })
+        
+        # Add to courses_with_submissions if there are any submissions
+        if enhanced_submissions:
+            courses_with_submissions.append({
+                'course': course,
+                'submissions': enhanced_submissions
+            })
     
-    return render_template('teacher_view_submissions.html', submissions=enhanced_submissions)
+    return render_template('teacher_view_submissions.html', courses_with_submissions=courses_with_submissions)
 
 
 @app.route('/teacher_grade')
@@ -499,6 +509,122 @@ def assignment_delete(assignment_id):
     else:
         flash("Assignment not found.", "error")
     return redirect(url_for('teacher_courses'))
+
+@app.route('/teacher_course_assignments/<int:course_id>')
+@role_required('teacher')
+def teacher_course_assignments(course_id):
+    """
+    Shows all assignments for a specific course with submission statistics.
+    """
+    teacher_id = session['user_id']
+    
+    # Get the course
+    course = get_course_by_id(course_id)
+    if not course:
+        flash("Course not found", "error")
+        return redirect(url_for('teacher_courses'))
+    
+    # Verify that this course belongs to the teacher
+    if course.teacher_id != teacher_id:
+        flash("You can only view your own courses", "error")
+        return redirect(url_for('teacher_courses'))
+    
+    # Get all assignments for this course
+    assignments = get_assignments_by_course(course_id)
+    
+    # Enhance each assignment with submission stats
+    enhanced_assignments = []
+    for assignment in assignments:
+        # Get statistics for this assignment
+        try:
+            stats = get_assignment_stats(assignment.id)
+            
+            enhanced_assignments.append({
+                'id': assignment.id,
+                'title': assignment.title,
+                'description': assignment.description,
+                'due_date': assignment.due_date,
+                'total_submissions': stats['total_submissions'],
+                'graded_submissions': stats['graded_submissions'],
+                'average_score': stats['average_score'],
+                'has_submissions': stats['total_submissions'] > 0
+            })
+        except ValueError:
+            # If there's an error getting stats, add basic assignment info
+            enhanced_assignments.append({
+                'id': assignment.id,
+                'title': assignment.title,
+                'description': assignment.description,
+                'due_date': assignment.due_date,
+                'total_submissions': 0,
+                'graded_submissions': 0,
+                'average_score': 0,
+                'has_submissions': False
+            })
+    
+    # Add current datetime for comparing due dates
+    current_datetime = datetime.utcnow()
+    
+    return render_template(
+        'teacher_course_assignments.html',
+        course=course,
+        assignments=enhanced_assignments,
+        now=current_datetime  
+    )
+
+@app.route('/teacher_assignment_stats/<int:assignment_id>')
+@role_required('teacher')
+def teacher_assignment_stats(assignment_id):
+    """
+    Shows statistics for a specific assignment.
+    """
+    teacher_id = session['user_id']
+    
+    # Get the assignment
+    assignment = get_assignment_by_id(assignment_id)
+    if not assignment:
+        flash("Assignment not found", "error")
+        return redirect(url_for('teacher_courses'))
+    
+    # Verify that this assignment belongs to one of the teacher's courses
+    course = get_course_by_id(assignment.course_id)
+    if not course or course.teacher_id != teacher_id:
+        flash("You can only view statistics for your own courses", "error")
+        return redirect(url_for('teacher_courses'))
+    
+    # Get statistics
+    try:
+        stats = get_assignment_stats(assignment_id)
+        
+        # Get detailed submission information with student names
+        enhanced_submissions = []
+        
+        for submission in stats['submissions']:
+            student = User.query.get(submission.student_id)
+            grade = Grade.query.filter_by(submission_id=submission.id).first()
+            
+            enhanced_submissions.append({
+                'id': submission.id,
+                'student_id': submission.student_id,
+                'student_name': student.username if student else 'Unknown',
+                'file_path': submission.file_path,
+                'submitted_at': submission.submitted_at,
+                'is_late': submission.is_late,
+                'grade': grade.score if grade else None,
+                'feedback': grade.feedback if grade else None,
+                'grade_id': grade.id if grade else None
+            })
+        
+        return render_template(
+            'teacher_assignment_stats.html',
+            assignment=assignment,
+            course=course,
+            stats=stats,
+            submissions=enhanced_submissions
+        )
+    except ValueError as e:
+        flash(str(e), "error")
+        return redirect(url_for('teacher_courses'))
 
 
 ########################
@@ -665,22 +791,29 @@ def submission_delete(submission_id):
 @role_required('teacher')
 def assign_grade_route():
     """
-    Calls grade_service.assign_grade.
+    Enhanced grading interface with detailed submission information.
     """
     teacher_id = session['user_id']
     
     # Get submission info if we have a submission_id
     submission = None
+    assignment = None
+    student = None
+    course = None
+    
     if request.args.get('submission_id'):
         submission_id = request.args.get('submission_id')
         submission = get_submission_by_id(submission_id)
         
-        # Verify that this submission is for an assignment in one of the teacher's courses
+        # Get related information
         if submission:
+            student = User.query.get(submission.student_id)
             assignment = get_assignment_by_id(submission.assignment_id)
             if assignment:
                 course = get_course_by_id(assignment.course_id)
-                if not course or course.teacher_id != teacher_id:
+                
+                # Verify that this submission is for an assignment in one of the teacher's courses
+                if course and course.teacher_id != teacher_id:
                     flash("You can only grade submissions for your own courses", "error")
                     return redirect(url_for('teacher_view_submissions'))
     
@@ -706,7 +839,19 @@ def assign_grade_route():
         except ValueError as e:
             flash(str(e), "error")
     
-    return render_template('assign_grade.html', submission=submission)
+    # Check if the submission already has a grade
+    existing_grade = None
+    if submission:
+        existing_grade = get_grade_by_submission(submission.id)
+    
+    return render_template(
+        'assign_grade.html', 
+        submission=submission,
+        assignment=assignment,
+        student=student,
+        course=course,
+        existing_grade=existing_grade
+    )
 
 
 @app.route('/grade/update', methods=['GET','POST'])
@@ -843,7 +988,7 @@ def download_file(filename):
 
 
 ########################
-# NEW STUDENT FUNCTIONALITY ROUTES
+# STUDENT FUNCTIONALITY ROUTES
 ########################
 
 @app.route('/student/assignments')
@@ -851,6 +996,7 @@ def download_file(filename):
 def student_assignments():
     """
     Route to view assignments for the courses the student is enrolled in.
+    Includes submission status for each assignment.
     """
     student_id = session['user_id']
     # Get courses student enrolled in
@@ -859,6 +1005,10 @@ def student_assignments():
     
     # Get assignments for these courses
     assignments = Assignment.query.filter(Assignment.course_id.in_(course_ids)).all()
+    
+    # Get all submissions for this student
+    submissions = Submission.query.filter_by(student_id=student_id).all()
+    submitted_assignment_ids = [sub.assignment_id for sub in submissions]
     
     # Enhance assignments with course info
     enhanced_assignments = []
@@ -873,7 +1023,15 @@ def student_assignments():
             'course_name': course.course_name if course else 'Unknown'
         })
     
-    return render_template('student_assignments.html', assignments=enhanced_assignments)
+    # Get current datetime for comparing due dates
+    current_datetime = datetime.utcnow()
+    
+    return render_template(
+        'student_assignments.html', 
+        assignments=enhanced_assignments,
+        submitted_assignments=submitted_assignment_ids,
+        now=current_datetime
+    )
 
 
 @app.route('/student/submissions')
@@ -947,7 +1105,7 @@ def student_grades():
 @role_required('student')
 def student_enroll():
     """
-    Route for student course enrollment.
+    Enhanced route for student course enrollment with teacher names.
     """
     student_id = session['user_id']
     
@@ -972,10 +1130,82 @@ def student_enroll():
         
         return redirect(url_for('student_enroll'))
     else:
-        courses = get_all_courses()
+        # Get all courses with teacher names
+        courses_with_teachers = []
+        all_courses = get_all_courses()
+        
+        for course in all_courses:
+            # Get teacher name for each course
+            teacher = User.query.get(course.teacher_id)
+            teacher_name = teacher.username if teacher else "Unknown"
+            
+            # Add to the list with teacher name
+            course_info = {
+                'id': course.id,
+                'course_name': course.course_name,
+                'course_code': course.course_code,
+                'description': course.description,
+                'teacher_id': course.teacher_id,
+                'teacher_name': teacher_name
+            }
+            courses_with_teachers.append(course_info)
+        
+        # Get enrolled courses
         enrollments = Enrollment.query.filter_by(user_id=student_id).all()
         enrolled_course_ids = [en.course_id for en in enrollments]
-        return render_template('student_enroll.html', courses=courses, enrolled_course_ids=enrolled_course_ids)
+        
+        return render_template(
+            'student_enroll.html', 
+            courses=courses_with_teachers, 
+            enrolled_course_ids=enrolled_course_ids
+        )
+
+@app.route('/student/drop_course', methods=['POST'])
+@role_required('student')
+def student_drop_course():
+    """
+    Route for students to drop/unenroll from a course.
+    """
+    student_id = session['user_id']
+    course_id = request.form.get('course_id')
+    
+    # Check if the course exists
+    course = get_course_by_id(course_id)
+    if not course:
+        flash("Course not found", "error")
+        return redirect(url_for('student_enroll'))
+    
+    # Check if enrolled
+    enrollment = Enrollment.query.filter_by(
+        user_id=student_id, 
+        course_id=course_id
+    ).first()
+    
+    if not enrollment:
+        flash(f"You are not enrolled in {course.course_name}", "error")
+    else:
+        # Check if student has submissions for assignments in this course
+        # Get all assignments for this course
+        assignments = Assignment.query.filter_by(course_id=course_id).all()
+        assignment_ids = [assignment.id for assignment in assignments]
+        
+        # Check if student has any submissions for these assignments
+        if assignment_ids:
+            submissions = Submission.query.filter(
+                Submission.student_id == student_id,
+                Submission.assignment_id.in_(assignment_ids)
+            ).first()
+            
+            if submissions:
+                flash(f"Cannot drop course: You have already submitted assignments for {course.course_name}", "error")
+                return redirect(url_for('student_enroll'))
+        
+        # Delete the enrollment
+        db.session.delete(enrollment)
+        db.session.commit()
+        flash(f"Successfully dropped course {course.course_name}", "success")
+    
+    return redirect(url_for('student_enroll'))
 
 
 ########################
