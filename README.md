@@ -7,9 +7,12 @@ I added a function to automatically build the database, but not sure if it gonna
 
 ## 1. Succesful run and connected to the port and db
 ![image](https://github.com/user-attachments/assets/53963e76-03ad-4bd0-9ca3-38f2e4e0f50b)
+![image](https://github.com/user-attachments/assets/23e8e97b-4144-46a5-8aaa-586c1b7111eb)
+
 
 ## 2.  Succesful for registration, both for students and teacher
-![image](https://github.com/user-attachments/assets/48145c73-17ae-450b-b365-95bb17fca35c)
+![image](https://github.com/user-attachments/assets/f0f0bfa2-40e7-4faf-b288-df763425536b)
+
 
 ![image](https://github.com/user-attachments/assets/b648978f-6da8-431e-8043-b62c9b2eaf47)
 
